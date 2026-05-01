@@ -1,65 +1,141 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Navbar from "@/components/Navbar/Navbar";
+import Hero from "@/components/Hero/Hero";
+import MarketTrends from "@/components/MarketTrends/MarketTrends";
+import CarGrid from "@/components/CarGrid/CarGrid";
+import { mockListings } from "@/data/mockListings";
 
 export default function Home() {
+  const [listings, setListings] = useState(mockListings);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSource, setDataSource] = useState("mock");
+  const [scrapedAt, setScrapedAt] = useState(null);
+  const [searchFilters, setSearchFilters] = useState({ make: "", model: "", maxPrice: "" });
+  const [favorites, setFavorites] = useState(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Fetch listings from the API on mount
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const res = await fetch("/api/listings");
+        if (!res.ok) throw new Error(`API returned ${res.status}`);
+        const data = await res.json();
+
+        if (data.listings && data.listings.length > 0) {
+          // Ensure each listing has the fields the frontend expects
+          const normalised = data.listings.map((l) => ({
+            id: l.id,
+            make: l.make || "Unknown",
+            model: l.model || "",
+            year: l.year || null,
+            price: l.price || 0,
+            currency: l.currency || "KES",
+            type: l.type || "unknown",
+            mileage: l.mileage || 0,
+            location: l.location || "",
+            image: l.image || "/images/car-1.png",
+            priceHistory: l.priceHistory || [l.price || 0],
+            verified: l.verified || false,
+            source: l.source || "Jiji Kenya",
+            description: l.description || "",
+            sourceUrl: l.sourceUrl || null,
+            transmission: l.transmission || null,
+            features: l.features || [],
+          }));
+          setListings(normalised);
+          setDataSource(data.meta?.source || "scraped");
+          setScrapedAt(data.meta?.scrapedAt || null);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch listings from API, using mock data:", err.message);
+        // Keep mock listings as fallback
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchListings();
+  }, []);
+
+  const toggleFavorite = useCallback((id) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleFavoritesView = useCallback(() => {
+    setShowFavoritesOnly((prev) => !prev);
+    setTimeout(() => {
+      const el = document.getElementById("listings");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  const handleResetView = useCallback(() => {
+    setShowFavoritesOnly(false);
+    setSearchFilters({ make: "", model: "", maxPrice: "" });
+    setTimeout(() => {
+      const el = document.getElementById("listings");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  const handleSearch = (filters) => {
+    setSearchFilters(filters);
+    setShowFavoritesOnly(false);
+    const el = document.getElementById("listings");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <Navbar
+        favoritesCount={favorites.size}
+        onToggleFavorites={handleToggleFavoritesView}
+        onResetView={handleResetView}
+      />
+      <Hero onSearch={handleSearch} listings={listings} />
+      <MarketTrends />
+
+      {/* Data source indicator */}
+      {!isLoading && dataSource !== "mock" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 -mb-4 mt-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Live data from {dataSource}
+            {scrapedAt && (
+              <span className="text-slate-300">
+                · Updated {new Date(scrapedAt).toLocaleDateString("en-KE", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            )}
+            <span className="text-slate-300">· {listings.length} listings</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+      <CarGrid
+        listings={listings}
+        searchFilters={searchFilters}
+        favorites={favorites}
+        onToggleFavorite={toggleFavorite}
+        showFavoritesOnly={showFavoritesOnly}
+        isLoading={isLoading}
+      />
+    </>
   );
 }

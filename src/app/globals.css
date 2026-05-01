@@ -1,26 +1,157 @@
+/**
+ * Learning Note:
+ * globals.css is the single entry point for all global styles in a Next.js App Router project.
+ * We use Tailwind v4's `@theme inline` directive to register custom design tokens (colors,
+ * fonts, animations) that become available as utility classes throughout the app.
+ * The "Verified Motion" theme uses spring-based easing curves and emerald green tones
+ * to create a premium, automotive marketplace aesthetic.
+ */
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ═══════════════════════════════════════════════════
+   EMERALD GREEN "VERIFIED MOTION" DESIGN SYSTEM
+   ═══════════════════════════════════════════════════ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Core Emerald Palette ── */
+  --color-emerald-50:  #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
+
+  /* ── Surface Colors (Light Mode Default) ── */
+  --color-bg-primary:    #f8fafc;
+  --color-bg-secondary:  #f1f5f9;
+  --color-bg-card:       #ffffff;
+  --color-bg-card-hover: #f8fafc;
+  --color-bg-elevated:   #ffffff;
+  --color-surface-glass: rgba(255, 255, 255, 0.8);
+
+  /* ── Text Colors ── */
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted:     #64748b;
+  --color-text-accent:    #059669;
+
+  /* ── Border Colors ── */
+  --color-border-default: #e2e8f0;
+  --color-border-hover:   #cbd5e1;
+  --color-border-active:  #94a3b8;
+
+  /* ── Badge Colors ── */
+  --color-badge-foreign:    rgba(59, 130, 246, 0.15);
+  --color-badge-foreign-text: #93c5fd;
+  --color-badge-foreign-border: rgba(59, 130, 246, 0.3);
+  --color-badge-local:      rgba(16, 185, 129, 0.15);
+  --color-badge-local-text: #6ee7b7;
+  --color-badge-local-border: rgba(16, 185, 129, 0.3);
+
+  /* ── Sparkline Colors ── */
+  --color-spark-up:   #34d399;
+  --color-spark-down: #f87171;
+
+  /* ── Typography ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Spring Easing Curves ("Verified Motion") ── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Durations ── */
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
+
+  /* ── Shadows ── */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(16, 185, 129, 0.06);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(16, 185, 129, 0.15), 0 0 30px rgba(16, 185, 129, 0.05);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15), 0 0 60px rgba(16, 185, 129, 0.05);
+
+  /* ── Animations ── */
+  --animate-fade-in: fade-in 0.6s var(--ease-out-expo) forwards;
+  --animate-slide-up: slide-up 0.6s var(--ease-out-expo) forwards;
+  --animate-scale-in: scale-in 0.5s var(--ease-spring) forwards;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Keyframes ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+  50%      { box-shadow: 0 0 40px rgba(16, 185, 129, 0.2); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* ── Global Resets & Base ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-emerald-800) transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Glassmorphism Utility ── */
+.glass {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid var(--color-border-default);
+}
+
+.glass-strong {
+  background: rgba(16, 185, 129, 0.08);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border: 1px solid var(--color-border-hover);
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(16, 185, 129, 0.3);
+  color: var(--color-emerald-50);
+}
+
+/* ── Focus Ring ── */
+:focus-visible {
+  outline: 2px solid var(--color-emerald-400);
+  outline-offset: 2px;
 }

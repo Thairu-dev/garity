@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+.venv/
+venv/
+*.pyc
+scraper/data/listings.json
+
+# Next.js / Swc
+.swc/
