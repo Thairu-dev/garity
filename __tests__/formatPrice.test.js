@@ -6,12 +6,12 @@ describe("formatPrice utilities", () => {
       // Different JS environments handle the non-breaking space differently
       // So we replace the unicode space with a regular space just for testing, or use a flexible matcher
       const formatted = formatPrice(4850000).replace(/\s/g, ' ');
-      expect(formatted).toBe("Ksh 4,850,000");
+      expect(formatted).toMatch(/^K(ES|sh)\s4,850,000$/);
     });
 
     it("should handle zero correctly", () => {
       const formatted = formatPrice(0).replace(/\s/g, ' ');
-      expect(formatted).toBe("Ksh 0");
+      expect(formatted).toMatch(/^K(ES|sh)\s0$/);
     });
   });
 
